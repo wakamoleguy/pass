@@ -47,25 +47,32 @@ self.addEventListener('fetch', event => {
 
   if (url.hostname === 'crypt.invalid') {
     console.log('Passing to crypt');
-    crypt.handleRequest(request);
+    crypt.handleRequest(request, event).then(response => {
+      event.respondWith(response);
+    }, err => {
+      event.respondWith(new Response(null, {
+        status: 500,
+        statusText: 'Internal Server Error'
+      }));
+    });
   } else {
     console.log('Normal fetch');
   }
 
   /*
-  function fetchFromCache(event) {
+    function fetchFromCache(event) {
     return caches.match(event.request).then(response => {
-      if (!response) {
-        throw Error('${event.request.url} not found in cache');
-      }
-      return response;
+    if (!response) {
+    throw Error('${event.request.url} not found in cache');
+    }
+    return response;
     })
-  }
+    }
 
-  function onFetch (event) {
+    function onFetch (event) {
     console.log("Using fetch for request", event);
     event.respondWith(fetchFromCache(event));
-  }
+    }
   */
 });
 
@@ -85,74 +92,96 @@ crypt = {
   root: '/api/crypt/',
   parser: new RegExp('^/api/crypt/(?:([^/?#]*)/)?$'),
 
-  handleRequest: function handleRequest(request) {
-    let url = new URL(request.url);
+  handleRequest(request) {
+    return new Promise((resolve, reject) => {
+      let url = new URL(request.url);
 
-    // Validate the URL
-    console.log('matching', url.pathname, this.parser);
-    let match = url.pathname.match(this.parser);
-    if (match === null) {
-      throw new Error('Invalid URL detected! ' + url.toString());
-    }
-
-    // Determine the operation
-    let key = match[1];
-    let value = request;
-    if (key === undefined) {
-      // Browse or Add
-
-      if (request.method === 'GET') {
-
-        return this.browse();
-      } else if (request.method === 'POST') {
-
-        // TODO - get key, value from POST
-        return this.add(key, value);
-      } else {
-
-        throw new Error('Undefined operation! ' +
-                        request.method + ' to ' + request.pathname);
+      // Validate the URL
+      console.log('matching', url.pathname, this.parser);
+      let match = url.pathname.match(this.parser);
+      if (match === null) {
+        reject(new Error('Invalid URL detected! ' + url.toString()));
       }
 
-    } else {
-      // Read, Edit, or Delete
-      if (request.method === 'GET') {
+      // Determine the operation
+      let key = match[1];
+      let value = request;
+      if (key === undefined) {
+        // Browse or Add
 
-        return this.read(key);
-      } else if (request.method === 'PUT') {
+        if (request.method === 'GET') {
 
-        // TODO - get value from PUT
-        return this.edit(key, value);
-      } else if (request.method === 'DELETE') {
+          resolve(this.browse());
+        } else if (request.method === 'POST') {
 
-        return this.delete(key);
+          // TODO - get key, value from POST
+          resolve(this.add(key, value));
+        } else {
+
+          reject(new Error('Undefined operation! ' +
+                           request.method + ' to ' + request.pathname));
+        }
+
       } else {
+        // Read, Edit, or Delete
+        if (request.method === 'GET') {
 
-        throw new Error('Undefined operation! ' +
-                        request.method + ' to ' + request.pathname);
+          resolve(this.read(key));
+        } else if (request.method === 'PUT') {
+
+          // TODO - get value from PUT
+          resolve(this.edit(key, value));
+        } else if (request.method === 'DELETE') {
+
+          resolve(this.delete(key));
+        } else {
+
+          reject(new Error('Undefined operation! ' +
+                           request.method + ' to ' + request.pathname));
+        }
       }
-    }
 
+    });
   },
 
   browse() {
     console.log('imunna browse');
+    return new Response(null, {
+      status: 501,
+      statusText: 'Not Yet Implemented'
+    });
   },
 
-  read: function read(key) {
+  read(key) {
     console.log('imunna read', key);
+    return new Response(null, {
+      status: 501,
+      statusText: 'Not Yet Implemented'
+    });
   },
 
-  edit: function edit(key, value) {
+  edit(key, value) {
     console.log('imunna edit', key, value);
+    return new Response(null, {
+      status: 501,
+      statusText: 'Not Yet Implemented'
+    });
   },
 
-  add: function add(key, value) {
+  add(key, value) {
     console.log('imunna add', key, value);
+    return new Response(null, {
+      status: 501,
+      statusText: 'Not Yet Implemented'
+    });
   },
 
-  delete: function deleteCrypt(key) {
+  delete(key) {
     console.log('imunna delete', key);
+    return new Response(null, {
+      status: 501,
+      statusText: 'Not Yet Implemented'
+    });
   },
 
 };
