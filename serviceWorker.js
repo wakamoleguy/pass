@@ -1,5 +1,13 @@
 'use strict';
 
+var crypt;
+
+/**
+ *
+ * Installation and activation
+ *
+ */
+
 self.addEventListener('install', event => {
   // Do install stuff
   console.log('installing', new Date());
@@ -26,31 +34,25 @@ self.addEventListener('activate', event => {
   console.log('activating', new Date());
 });
 
-
+/**
+ *
+ * Fetching and Caching
+ *
+ */
 self.addEventListener('fetch', event => {
   // … Perhaps respond to this fetch in a useful way?
-  console.log("Service worker handling fetch?");
+  var request            = event.request;
+  var url                = new URL(request.url);
+  console.log("Service worker handling fetch?", url.toString());
 
-  function shouldHandleFetch (event) {
-    // Should we handle this fetch?
-    var request            = event.request;
-    var url                = new URL(request.url);
-    var criteria           = {
-      matchesPathPattern: url.pathname === '/pass/super-secret-password.json',
-      isGETRequest      : request.method === 'GET',
-      isFromMyOrigin    : url.origin === self.location.origin
-    };
-    console.log('Cache criteria', criteria, url);
-
-    // Create a new array with just the keys from criteria that have
-    // failing (i.e. false) values.
-    var failingCriteria    = Object.keys(criteria).
-      filter(criteriaKey => !criteria[criteriaKey]);
-
-    // If that failing array has any length, one or more tests failed.
-    return !failingCriteria.length;
+  if (url.hostname === 'crypt.invalid') {
+    console.log('Passing to crypt');
+    crypt.handleRequest(request);
+  } else {
+    console.log('Normal fetch');
   }
 
+  /*
   function fetchFromCache(event) {
     return caches.match(event.request).then(response => {
       if (!response) {
@@ -64,8 +66,93 @@ self.addEventListener('fetch', event => {
     console.log("Using fetch for request", event);
     event.respondWith(fetchFromCache(event));
   }
-
-  if (shouldHandleFetch(event)) {
-    onFetch(event);
-  }
+  */
 });
+
+
+/**
+ * Crypt BREAD API
+ *
+ * Root Path:  /api/crypt
+ *
+ * Browse - GET    /api/crypt/
+ * Read   - GET    /api/crypt/github.com
+ * Edit   - PUT    /api/crypt/github.com
+ * Add    - POST   /api/crypt/
+ * Delete - DELETE /api/crypt/github.com
+ */
+crypt = {
+  root: '/api/crypt/',
+  parser: new RegExp('^/api/crypt/(?:([^/?#]*)/)?$'),
+
+  handleRequest: function handleRequest(request) {
+    let url = new URL(request.url);
+
+    // Validate the URL
+    console.log('matching', url.pathname, this.parser);
+    let match = url.pathname.match(this.parser);
+    if (match === null) {
+      throw new Error('Invalid URL detected! ' + url.toString());
+    }
+
+    // Determine the operation
+    let key = match[1];
+    let value = request;
+    if (key === undefined) {
+      // Browse or Add
+
+      if (request.method === 'GET') {
+
+        return this.browse();
+      } else if (request.method === 'POST') {
+
+        // TODO - get key, value from POST
+        return this.add(key, value);
+      } else {
+
+        throw new Error('Undefined operation! ' +
+                        request.method + ' to ' + request.pathname);
+      }
+
+    } else {
+      // Read, Edit, or Delete
+      if (request.method === 'GET') {
+
+        return this.read(key);
+      } else if (request.method === 'PUT') {
+
+        // TODO - get value from PUT
+        return this.edit(key, value);
+      } else if (request.method === 'DELETE') {
+
+        return this.delete(key);
+      } else {
+
+        throw new Error('Undefined operation! ' +
+                        request.method + ' to ' + request.pathname);
+      }
+    }
+
+  },
+
+  browse() {
+    console.log('imunna browse');
+  },
+
+  read: function read(key) {
+    console.log('imunna read', key);
+  },
+
+  edit: function edit(key, value) {
+    console.log('imunna edit', key, value);
+  },
+
+  add: function add(key, value) {
+    console.log('imunna add', key, value);
+  },
+
+  delete: function deleteCrypt(key) {
+    console.log('imunna delete', key);
+  },
+
+};

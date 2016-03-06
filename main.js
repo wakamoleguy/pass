@@ -1,3 +1,5 @@
+'use strict';
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('serviceWorker.js', {
     scope: '/pass/'
@@ -6,14 +8,21 @@ if ('serviceWorker' in navigator) {
   console.warn("ServiceWorker unavailable.");
 }
 
-var i = 0;
-var interval = setInterval(function () {
-  i++;
-  if (i > 5) clearInterval(interval);
-var xhr = new XMLHttpRequest();
-xhr.open('GET', '/pass/super-secret-password.json');
-xhr.onload = function () {
-  console.log(this.responseText);
+function go(method, url) {
+  let xhr = new XMLHttpRequest();
+  xhr.open(method.toUpperCase(), url);
+  xhr.onload = function () {
+    console.log(method, url, this.responseText);
+  }
+
+  xhr.send();
 }
-xhr.send();
-}, 2000);
+
+
+go('GET', 'https://crypt.invalid/api/crypt/');
+go('POST', 'https://crypt.invalid/api/crypt/');
+go('GET', 'https://crypt.invalid/api/crypt/123/');
+go('GET', 'https://crypt.invalid/api/crypt/github.com/');
+go('PUT', 'https://crypt.invalid/api/crypt/123/');
+go('DELETE', 'https://crypt.invalid/api/crypt/123/');
+
