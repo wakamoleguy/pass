@@ -38,12 +38,12 @@
 
   console.browse = function () {
     console.log('Trying...');
-    crypt2.browse().then(printDone);
+    crypt.browse().then(printDone);
   };
 
   console.read = function (key) {
     console.log('Trying...');
-    crypt2.read(key).then(printDone);
+    crypt.read(key).then(printDone);
   };
 
   console.edit = function (key) {
@@ -52,12 +52,12 @@
 
   console.add = function (key, value) {
     console.log('Trying...');
-    crypt2.add(key, value).then(printDone);
+    crypt.add(key, value).then(printDone);
   };
 
   console.del = function (key) {
     console.log('Trying...');
-    crypt2.del(key).then(printDone);
+    crypt.del(key).then(printDone);
   };
 
   /**
@@ -65,7 +65,7 @@
    * Storage API
    *
    */
-  crypt2 = {
+  crypt = {
     root: 'https://crypt.invalid/api/crypt/',
 
     decrypt(plaintext) {
