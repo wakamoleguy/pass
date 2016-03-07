@@ -13,17 +13,7 @@ self.addEventListener('install', event => {
   console.log('installing', new Date());
 
   function prefillCache () {
-    return caches.open('crypt').
-      then(cache => {
-        let response = new Response('{"key":"ABC123"}', {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-
-        cache.put('/pass/super-secret-password.json', response);
-        return;
-      });
+    return true;
   }
 
   event.waitUntil(prefillCache(event));
@@ -43,29 +33,13 @@ self.addEventListener('fetch', event => {
   // … Perhaps respond to this fetch in a useful way?
   var request            = event.request;
   var url                = new URL(request.url);
-  console.log("Service worker handling fetch?", url.toString());
 
   if (url.hostname === 'crypt.invalid') {
-    console.log('Passing to crypt');
-    console.log('body used? ', request.bodyUsed);
     event.respondWith(crypt.handleRequest(request, event).catch(err => new Response('', {
       status: 500,
       statusText: 'Internal Server Error'
     })));
-  } else {
-    console.log('Normal fetch');
   }
-
-  /*
-    function fetchFromCache(event) {
-    return 
-    }
-
-    function onFetch (event) {
-    console.log("Using fetch for request", event);
-    event.respondWith(fetchFromCache(event));
-    }
-  */
 });
 
 
@@ -132,7 +106,6 @@ crypt = {
       let url = new URL(request.url);
 
       // Validate the URL
-      console.log('matching', url.pathname, this.parser);
       let match = url.pathname.match(this.parser);
       if (match === null) {
         reject(new Error('Invalid URL detected! ' + url.toString()));
@@ -179,19 +152,16 @@ crypt = {
   },
 
   browse() {
-    console.log('imunna browse');
     return caches.open(this.cache).
       then(cache => cache.keys()).
       then(keys => new Response(JSON.stringify(keys.map(req => req.url))));
   },
 
   read(request, key) {
-    console.log('imunna read', key);
     return this.getCache(key);
   },
 
   edit(request, key) {
-    console.log('imunna edit', key, value);
     return new Response('', {
       status: 501,
       statusText: 'Not Yet Implemented'
@@ -199,8 +169,6 @@ crypt = {
   },
 
   add(request) {
-    console.log('imunna add');
-
     return request.json().then(data => {
       let k = data.key;
       let v = data.value;
@@ -215,7 +183,6 @@ crypt = {
   },
 
   delete(request, key) {
-    console.log('imunna delete', key);
     return this.deleteCache(key);
   },
 

@@ -115,7 +115,8 @@
       };
 
       return fetch(this.root, {
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify(data)
       }).then(response => (response.status === 201));
     },
 
