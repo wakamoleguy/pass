@@ -11,17 +11,13 @@ var crypt;
 self.addEventListener('install', event => {
   // Do install stuff
   console.log('installing', new Date());
-
-  function prefillCache () {
-    return true;
-  }
-
-  event.waitUntil(prefillCache(event));
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   // Do activate stuff: This will come later on.
   console.log('activating', new Date());
+  self.clients.claim();
 });
 
 /**
