@@ -1,70 +1,129 @@
-var p;
+(function () {
+  /***
+   *
+   * Feature detection!
+   *
+   **/
 
-if ('serviceWorker' in navigator) {
-  p = navigator.serviceWorker.register('serviceWorker.js', {
-    scope: '/pass/'
+  if (!('serviceWorker' in navigator)) {
+    throw new Error('ServiceWorker API is required.');
+  }
+
+  if (!self.fetch) {
+    throw new Error('Fetch API is required.');
+  }
+
+  /**
+   *
+   * Initialization.
+   *
+   */
+  var initialized = new Promise((resolve, reject) => {
+    console.log('Initializing...');
+    navigator.serviceWorker.register('serviceWorker.js', {
+      scope: '/pass/'
+    }).then(_ => {
+      console.log('Initialized');
+      resolve();
+    }).catch(reject);
   });
-} else {
-  console.error("ServiceWorker unavailable.");
-  throw new Error("ServiceWorker API required for this application.");
-  p = new Promise(function (resolve, reject) { reject(); });
-}
 
-function go(method, url, data, decrypt) {
-  let xhr = new XMLHttpRequest();
-  let formdata= new FormData();
+  /**
+   * console commands for convenience
+   */
+  function printDone(message) {
+    console.log(message);
+    console.log('Done.');
+  };
 
-  for (let key in data) {
-    formdata.append(key, data[key]);
-  }
-  xhr.open(method.toUpperCase(), url);
-  xhr.onload = function () {
-    var text = this.responseText;
-    if (decrypt) {
-      text = text.split('').reverse().join('');
+  console.browse = function () {
+    console.log('Trying...');
+    crypt2.browse().then(printDone);
+  };
+
+  console.read = function (key) {
+    console.log('Trying...');
+    crypt2.read(key).then(printDone);
+  };
+
+  console.edit = function (key) {
+    console.log('Not trying...I have not written that yet.');
+  };
+
+  console.add = function (key, value) {
+    console.log('Trying...');
+    crypt2.add(key, value).then(printDone);
+  };
+
+  console.del = function (key) {
+    console.log('Trying...');
+    crypt2.del(key).then(printDone);
+  };
+
+  /**
+   *
+   * Storage API
+   *
+   */
+  crypt2 = {
+    root: 'https://crypt.invalid/api/crypt/',
+
+    decrypt(plaintext) {
+      return plaintext.split('').reverse().join('');
+    },
+
+    encrypt(ciphertext) {
+      return ciphertext.split('').reverse().join('');
+    },
+
+    browse() {
+      return fetch(this.root).then(response => {
+        if (response.status === 200) {
+
+          return response.json();
+        } else {
+
+          return [];
+        }
+      });
+    },
+
+    read(key) {
+      return fetch(this.root + key + '/').then(response => {
+
+        if (response.status === 200) {
+
+          return response.json().then(json => {
+
+            return this.decrypt(json.value);
+          });
+        } else {
+
+          return null;
+        }
+      });
+    },
+
+    edit() {
+      console.warn('Not implemented.');
+    },
+
+    add(key, value) {
+      let data = {
+        key: key,
+        value: this.encrypt(value)
+      };
+
+      return fetch(this.root, {
+        method: 'POST'
+      }).then(response => (response.status === 201));
+    },
+
+    del(key) {
+      return fetch(this.root + key + '/', {
+        method: 'DELETE'
+      }).then(response => (response.status === 204));
     }
-    console.log(method, url, text);
-  }
+  };
 
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.send(JSON.stringify(data));
-}
-
-p.then(function () {
-  return;
-  go('GET', 'https://crypt.invalid/api/crypt/');
-  go('POST', 'https://crypt.invalid/api/crypt/');
-  go('GET', 'https://crypt.invalid/api/crypt/123/');
-  go('GET', 'https://crypt.invalid/api/crypt/github.com/');
-  go('PUT', 'https://crypt.invalid/api/crypt/123/');
-  go('DELETE', 'https://crypt.invalid/api/crypt/123/');
-
-  go('HELLO', 'https://crypt.invalid/api/crypt/');
-  go('HELLO', 'https://crypt.invalid/api/crypt/123/');
-  go('GET', 'https://crypt.invalid/foo/bar/');
-});
-
-
-
-window.crypt = {
-
-  add: function (key, value) {
-    let data = {
-      key: key,
-      value: value.split('').reverse().join('')
-    };
-    go('POST', 'https://crypt.invalid/api/crypt/', data, true);
-  },
-
-  get: function (key) {
-    go('GET', 'https://crypt.invalid/api/crypt/' + key + '/', undefined, true);
-  },
-
-  del: function (key) {
-    go('DELETE', 'https://crypt.invalid/api/crypt/' + key + '/');
-  },
-
-  browse: function () {
-    go('GET', 'https://crypt.invalid/api/crypt/');
-  }
-};
+})();
