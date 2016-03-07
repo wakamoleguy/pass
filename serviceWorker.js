@@ -47,26 +47,18 @@ self.addEventListener('fetch', event => {
 
   if (url.hostname === 'crypt.invalid') {
     console.log('Passing to crypt');
-    crypt.handleRequest(request, event).then(response => {
-      event.respondWith(response);
-    }, err => {
-      event.respondWith(new Response(null, {
-        status: 500,
-        statusText: 'Internal Server Error'
-      }));
-    });
+    console.log('body used? ', request.bodyUsed);
+    event.respondWith(crypt.handleRequest(request, event).catch(err => new Response('', {
+      status: 500,
+      statusText: 'Internal Server Error'
+    })));
   } else {
     console.log('Normal fetch');
   }
 
   /*
     function fetchFromCache(event) {
-    return caches.match(event.request).then(response => {
-    if (!response) {
-    throw Error('${event.request.url} not found in cache');
-    }
-    return response;
-    })
+    return 
     }
 
     function onFetch (event) {
@@ -91,6 +83,49 @@ self.addEventListener('fetch', event => {
 crypt = {
   root: '/api/crypt/',
   parser: new RegExp('^/api/crypt/(?:([^/?#]*)/)?$'),
+  cache: 'crypt',
+
+  putCache(key, value) {
+    return caches.open(this.cache).then(cache => {
+        let response = new Response(JSON.stringify({
+          value: value
+        }), {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        cache.put('https://crypt.invalid/api/crypt/'+key+'/', response);
+        return;
+      });
+  },
+
+  getCache(key) {
+    return caches.match('https://crypt.invalid/api/crypt/'+key+'/').then(response => {
+      return response || new Response(undefined, {
+          status: 404,
+          statusText: 'Item Not Found'
+      });
+    });
+  },
+
+  deleteCache(key) {
+    return caches.open('crypt').then(cache => {
+      return cache.delete('https://crypt.invalid/api/crypt/'+key+'/');
+    }).then(deleted => {
+      if (deleted) {
+        return new Response(undefined, {
+          status: '204',
+          statusText: 'No Content'
+        });
+      } else {
+        return new Response('', {
+          status: '404',
+          statusText: 'Not Found'
+        });
+      }
+    });
+  },
 
   handleRequest(request) {
     return new Promise((resolve, reject) => {
@@ -105,7 +140,6 @@ crypt = {
 
       // Determine the operation
       let key = match[1];
-      let value = request;
       if (key === undefined) {
         // Browse or Add
 
@@ -115,7 +149,7 @@ crypt = {
         } else if (request.method === 'POST') {
 
           // TODO - get key, value from POST
-          resolve(this.add(key, value));
+          resolve(this.add(request));
         } else {
 
           reject(new Error('Undefined operation! ' +
@@ -126,14 +160,14 @@ crypt = {
         // Read, Edit, or Delete
         if (request.method === 'GET') {
 
-          resolve(this.read(key));
+          resolve(this.read(request, key));
         } else if (request.method === 'PUT') {
 
           // TODO - get value from PUT
-          resolve(this.edit(key, value));
+          resolve(this.edit(request, key));
         } else if (request.method === 'DELETE') {
 
-          resolve(this.delete(key));
+          resolve(this.delete(request, key));
         } else {
 
           reject(new Error('Undefined operation! ' +
@@ -146,42 +180,43 @@ crypt = {
 
   browse() {
     console.log('imunna browse');
-    return new Response(null, {
-      status: 501,
-      statusText: 'Not Yet Implemented'
-    });
+    return caches.open(this.cache).
+      then(cache => cache.keys()).
+      then(keys => new Response(JSON.stringify(keys.map(req => req.url))));
   },
 
-  read(key) {
+  read(request, key) {
     console.log('imunna read', key);
-    return new Response(null, {
-      status: 501,
-      statusText: 'Not Yet Implemented'
-    });
+    return this.getCache(key);
   },
 
-  edit(key, value) {
+  edit(request, key) {
     console.log('imunna edit', key, value);
-    return new Response(null, {
+    return new Response('', {
       status: 501,
       statusText: 'Not Yet Implemented'
     });
   },
 
-  add(key, value) {
-    console.log('imunna add', key, value);
-    return new Response(null, {
-      status: 501,
-      statusText: 'Not Yet Implemented'
+  add(request) {
+    console.log('imunna add');
+
+    return request.json().then(data => {
+      let k = data.key;
+      let v = data.value;
+
+      return this.putCache(k, v).then(_ => (
+        new Response(`/api/crypt/${k}/`, {
+          status: 201,
+          statusText: 'Created'
+        })
+      ));
     });
   },
 
-  delete(key) {
+  delete(request, key) {
     console.log('imunna delete', key);
-    return new Response(null, {
-      status: 501,
-      statusText: 'Not Yet Implemented'
-    });
+    return this.deleteCache(key);
   },
 
 };
