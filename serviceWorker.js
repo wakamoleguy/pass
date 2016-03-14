@@ -102,6 +102,21 @@
       return new Promise((resolve, reject) => {
         let url = new URL(request.url);
 
+        // Is this a cert request?
+        if (url.pathname === '/api/cert/') {
+          if (request.method === 'GET') {
+            resolve(this.getCert());
+          } else if (request.method === 'PUT') {
+            resolve(this.putCert(request));
+          } else {
+            reject(new Error('Undefined operation! ' +
+              request.method + ' to ' + request.pathname));
+          }
+          return;
+        }
+
+        /* Non cert requests */
+
         // Validate the URL
         let match = url.pathname.match(this.parser);
         if (match === null) {
@@ -181,6 +196,35 @@
 
     delete(request, key) {
       return this.deleteCache(key);
+    },
+
+    putCert(request) {
+      return request.json().then(data => {
+        return caches.open(this.cache).then(cache => {
+          let response = new Response(JSON.stringify({
+            value: data
+          }), {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          cache.put('https://crypt.invalid/api/cert/', response);
+          return new Response('', {
+            status: 200,
+            statusText: 'OK'
+          });
+        });
+      });
+    },
+
+    getCert() {
+      return caches.match('https://crypt.invalid/api/cert/').then(response => {
+        return response || new Response(undefined, {
+          status: 404,
+          statusText: 'Item Not Found'
+        });
+      });
     },
 
   };
