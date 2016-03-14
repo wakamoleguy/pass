@@ -68,12 +68,18 @@
   crypt = {
     root: 'https://crypt.invalid/api/crypt/',
 
-    decrypt(plaintext) {
-      return plaintext.split('').reverse().join('');
+    decrypt(ciphertext) {
+      return openpgp.decrypt({
+        message: openpgp.message.readArmored(ciphertext),
+        password: 'secret stuff'
+      }).then(plaintext => plaintext.data);
     },
 
-    encrypt(ciphertext) {
-      return ciphertext.split('').reverse().join('');
+    encrypt(plaintext) {
+      return openpgp.encrypt({
+        data: plaintext,
+        passwords: ['secret stuff']
+      }).then(ciphertext => ciphertext.data);
     },
 
     browse() {
@@ -109,14 +115,16 @@
     },
 
     add(key, value) {
-      let data = {
-        key: key,
-        value: this.encrypt(value)
-      };
-
-      return fetch(this.root, {
-        method: 'POST',
-        body: JSON.stringify(data)
+      return this.encrypt(value).then(ciphertext => {
+        return data = {
+          key: key,
+          value: ciphertext
+        };
+      }).then(data => {
+        return fetch(this.root, {
+          method: 'POST',
+          body: JSON.stringify(data)
+        });
       }).then(response => (response.status === 201));
     },
 
