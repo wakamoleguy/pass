@@ -2,9 +2,40 @@
 <html>
   <head>
     <title>Password Syncronizer</title>
+    <link rel="stylesheet" href="main.css">
   </head>
   <body>
-    This is the password syncronizer.
+    <h1>Password Synchronizer</h1>
+
+    <ul id="pass-list">
+      <li>
+        <article class="pass">
+          <h2 class="key">Hello</h2>
+          <button type="button" class="copy">Copy</button>
+          <button type="button" class="delete">Delete</button>
+          <button type="button" class="view">View</button>
+          <span class="secret"></span>
+        </article>
+      </li>
+      <li>
+        <article class="pass">
+          <h2 class="key">123</h2>
+          <button type="button" class="copy">Copy</button>
+          <button type="button" class="delete">Delete</button>
+          <button type="button" class="view">View</button>
+          <span class="secret"></span>
+        </article>
+      </li>
+      <li>
+        <article class="pass">
+          <h2 class="key">github.com</h2>
+          <button type="button" class="copy">Copy</button>
+          <button type="button" class="delete">Delete</button>
+          <button type="button" class="view">View</button>
+          <span class="secret"></span>
+        </article>
+      </li>
+    </ul>
 
     <script src="openpgp/openpgp.js"></script>
     <script src="main.js"></script>
