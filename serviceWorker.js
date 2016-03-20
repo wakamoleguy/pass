@@ -166,7 +166,9 @@
     browse() {
       return caches.open(this.cache).
       then(cache => cache.keys()).
-      then(keys => new Response(JSON.stringify(keys.map(req => req.url))));
+      then(keys => new Response(JSON.stringify(
+        keys.map(req => req.url).filter(url => (this.parser.test(new URL(url).pathname)))
+      )));
     },
 
     read(request, key) {
