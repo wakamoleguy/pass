@@ -32,13 +32,17 @@
     this.passwordView.doadd = this.cryptModel.add.bind(this.cryptModel);
     this.passwordView.dodel = this.cryptModel.del.bind(this.cryptModel);
     this.passwordView.dodump = this.cryptModel.dump.bind(this.cryptModel);
+
+    /* Initialize? */
+    this.passwordView.browse();
   }
 
 
   let crypt = new CryptApp('crypt-app', {
     crypt: new app.Crypt(),
   }, {
-    password: new app.PasswordView()
+    //password: new app.PasswordConsoleView()
+    password: new app.PasswordListView()
   });
 
   app.crypt = crypt;

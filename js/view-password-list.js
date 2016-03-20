@@ -1,6 +1,30 @@
 (function () {
   'use strict';
 
+  let el = {
+    passlist: document.getElementById('pass-list')
+  };
+
+  let templateCache = {};
+
+  function Template(id, tag, params) {
+    let template = templateCache[id] ||
+      (templateCache[id] = document.getElementById(id));
+
+    let node = document.createElement(tag);
+    node.innerHTML = template.innerHTML;
+
+    for (let key in params) {
+      node.dataset[key] = params[key];
+      let keyNode = node.querySelector('.' + key);
+      if (keyNode) {
+        keyNode.innerHTML = params[key];
+      }
+    }
+
+    return node;
+  }
+
   function trying() {
     console.log('Trying...');
   }
@@ -10,22 +34,46 @@
     console.log('Done');
   }
 
-  function PasswordConsoleView() {
+  function clearList() {
+    for (let i = 1; i < el.passlist.children.length; 'no increment') {
+      el.passlist.removeChild(el.passlist.children.item(i));
+    }
+  }
+
+  function PasswordListView() {
+    /* Make sure code doesn't crash */
     this.dobrowse =
     this.doread   =
     this.doedit   =
     this.doadd    =
     this.dodel    =
-    this.dodebug  = (_ => {});
+    this.dodebug  = (_ => (new Promise(function (r) { r(); })));
+
+    /* Wire the DOM to various methods */
+
   }
 
-  PasswordConsoleView.prototype = {
+  PasswordListView.prototype = {
     browse() {
       trying();
       this.dobrowse().then(this.onbrowse);
     },
 
+    clearList: clearList,
+
     onbrowse(values) {
+      clearList();
+      values.forEach(url => {
+        let name = url.match(/.*\/([^/]*)\/$/)[1];
+
+        let node = new Template('passlist-item-template', 'li', {
+          name: name
+        });
+
+        /* Node.addabunchofeventlisteners() */
+
+        el.passlist.appendChild(node);
+      });
       printDone(values);
     },
 
@@ -78,5 +126,5 @@
     }
   };
 
-  app.PasswordView = PasswordConsoleView;
+  app.PasswordListView = PasswordListView;
 })();
