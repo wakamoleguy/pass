@@ -3,6 +3,22 @@
 
   var crypt;
 
+  var config = {
+    staticCacheItems: [
+      '/css/main.css',
+      '/js/main.js',
+      '/js/model-crypt.js',
+      '/js/view-password-console.js',
+      '/js/view-password-list.js',
+      '/openpgp/openpgp.js',
+      '/openpgp/openpgp.min.js',
+      '/openpgp/openpgp.worker.js',
+      '/openpgp/openpgp.worker.min.js',
+      '/index.html'
+    ],
+    cachePathPattern: /^\/pass\//
+  };
+
   /**
    *
    * Installation and activation
@@ -12,7 +28,12 @@
   self.addEventListener('install', event => {
     // Do install stuff
     console.log('installing', new Date());
-    self.skipWaiting();
+
+    event.waitUntil(_ => {
+      return caches.open('static').
+        then(cache => cache.addAll(config.staticCacheItems)).
+        then(_ => self.skipWaiting());
+    });
   });
 
   self.addEventListener('activate', event => {
@@ -31,11 +52,36 @@
     var request = event.request;
     var url = new URL(request.url);
 
+    function shouldHandleFetch(event, opts) {
+      return opts.cachePathPattern.test(url.pathname) &&
+        request.method === 'GET' &&
+        url.origin === self.location.origin;
+    }
+
     if (url.hostname === 'crypt.invalid') {
       event.respondWith(crypt.handleRequest(request, event).catch(err => new Response('', {
         status: 500,
         statusText: 'Internal Server Error'
       })));
+    } else if (shouldHandleFetch(event, config)) {
+      event.respondWith(
+        fetch(request)
+          .then(response => {
+            console.log('caching', url.pathname);
+            return caches.open('static').then(cache => {
+              cache.put(request, response.clone());
+              return response;
+            });
+          })
+          .catch(() => {
+            return caches.match(request).then(response => {
+              return response || new Response(undefined, {
+                status: 404,
+                statusText: 'Item Not Found'
+              });
+            });
+          })
+      );
     }
   });
 
