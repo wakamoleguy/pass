@@ -24,6 +24,7 @@
   function CryptApp(name, models, views) {
     this.cryptModel = models.crypt;
     this.passwordView = views.password;
+    this.syncModel = models.sync;
 
     // Wire stuff together now, please.
     this.passwordView.dobrowse = this.cryptModel.browse.bind(this.cryptModel);
@@ -40,6 +41,7 @@
 
   let crypt = new CryptApp('crypt-app', {
     crypt: new app.Crypt(),
+    sync: new app.Sync()
   }, {
     //password: new app.PasswordConsoleView()
     password: new app.PasswordListView()
