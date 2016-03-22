@@ -155,9 +155,9 @@
       console.warn('Not implemented.');
     },
 
-    add(key, value) {
+    add(key, value, encrypted) {
       return this.initialized.then(_ => {
-        return this.encrypt(value);
+        return encrypted ? value : this.encrypt(value);
       }).
         then(ciphertext => {
           return {

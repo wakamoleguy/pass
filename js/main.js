@@ -25,6 +25,7 @@
     this.cryptModel = models.crypt;
     this.passwordView = views.password;
     this.syncModel = models.sync;
+    this.syncView = views.sync;
 
     // Wire stuff together now, please.
     this.passwordView.dobrowse = this.cryptModel.browse.bind(this.cryptModel);
@@ -33,6 +34,38 @@
     this.passwordView.doadd = this.cryptModel.add.bind(this.cryptModel);
     this.passwordView.dodel = this.cryptModel.del.bind(this.cryptModel);
     this.passwordView.dodump = this.cryptModel.dump.bind(this.cryptModel);
+
+    this.syncView.dostop = this.syncModel.stop.bind(this.syncModel);
+    this.syncView.doconnect = this.syncModel.register.bind(this.syncModel);
+    this.syncView.doapprove = this.syncModel.approve.bind(this.syncModel);
+    this.syncModel.doverify = this.syncView.onconnect.bind(this.syncView);
+    this.syncModel.onverify = this.syncView.onverify.bind(this.syncView);
+    this.syncModel.onmessage = this.syncView.onmessage.bind(this.syncView);
+    this.syncModel.ondisconnect = this.syncView.ondisconnect.bind(this.syncView);
+
+    this.syncView.dosynccert = _ => {
+      return this.cryptModel.getCert().then(cert => {
+        this.syncModel.send('cert', cert);
+      });
+    };
+    this.syncModel.oncert = (cert) => {
+      this.cryptModel.putCert(cert);
+    };
+
+    this.syncModel.onpass = (pass) => {
+      this.cryptModel.add(pass.key, pass.value, true).then(_ => {
+        this.passwordView.onadd(true, pass.key);
+      });
+    };
+
+    this.passwordView.dosyncpass = (name) => {
+      return this.cryptModel.dump(name).then(ciphertext => {
+        return this.syncModel.send('pass', {
+          key: name,
+          value: ciphertext
+        });
+      });
+    };
 
     /* Initialize? */
     this.passwordView.browse();
@@ -43,8 +76,9 @@
     crypt: new app.Crypt(),
     sync: new app.Sync()
   }, {
-    //password: new app.PasswordConsoleView()
-    password: new app.PasswordListView()
+    //password: new app.PasswordConsoleView(),
+    password: new app.PasswordListView(),
+    sync: new app.SyncView()
   });
 
   app.crypt = crypt;

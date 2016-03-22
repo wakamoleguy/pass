@@ -51,7 +51,8 @@
     this.doedit   =
     this.doadd    =
     this.dodel    =
-    this.dodebug  = (_ => (new Promise(function (r) { r(); })));
+    this.dodebug  =
+    this.dosyncpass = (_ => (new Promise(function (r) { r(); })));
 
     /* Wire the DOM to various methods */
     el.passadd.addEventListener('submit', e => {
@@ -92,6 +93,9 @@
         node.querySelector('button.view').addEventListener('click', _ => {
           this.read(name, node);
         }, false);
+        node.querySelector('button.sync').addEventListener('click', _ => {
+          this.dosyncpass(name);
+        });
 
         el.passlist.appendChild(node);
       });
@@ -132,6 +136,9 @@
       node.querySelector('button.view').addEventListener('click', _ => {
         this.read(name, node);
       }, false);
+      node.querySelector('button.sync').addEventListener('click', _ => {
+        this.dosyncpass(name);
+      });
 
       if (el.passlist.children.length < 2) {
         el.passlist.appendChild(node);
@@ -140,7 +147,30 @@
       }
     },
 
-    onadd(bool) {
+    onadd(bool, name) {
+      if (name) {
+        // Need to add a UI element, because I didn't do this add myself
+        let node = new Template('passlist-item-template', 'li', {
+          name: name
+        });
+
+        /* Node.addabunchofeventlisteners */
+        node.querySelector('button.delete').addEventListener('click', _ => {
+          this.del(name, node);
+        }, false);
+        node.querySelector('button.view').addEventListener('click', _ => {
+          this.read(name, node);
+        }, false);
+        node.querySelector('button.sync').addEventListener('click', _ => {
+          this.dosyncpass(name);
+        });
+
+        if (el.passlist.children.length < 2) {
+          el.passlist.appendChild(node);
+        } else {
+          el.passlist.insertBefore(node, el.passlist.children.item(1));
+        }
+      }
       printDone(bool);
     },
 

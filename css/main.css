@@ -172,6 +172,7 @@ body {
   margin: 10em auto;
   background: white;
   padding: 0 0 5em 0;
+  font: 1em/2em 'Roboto', sans-serif;
 }
 article, form#pass-add {
   max-width: 38em;
@@ -183,4 +184,77 @@ article, form#pass-add {
 
 li {
   list-style: none;
+}
+
+/** Sync **/
+#sync-offline,
+#sync-pin,
+#sync-match,
+#sync-online {
+  display: none;
+  overflow: hidden;
+}
+#sync.offline #sync-offline,
+#sync.pin #sync-pin,
+#sync.match #sync-match,
+#sync.online #sync-online {
+  display: block;
+}
+
+#sync {
+  max-width: 40em;
+  margin: 0 auto;
+}
+
+#sync-offline, #sync-online {
+  box-shadow: inset 0px 1.5px 4px rgba(0, 0, 0, 0.24), inset 0px 1.5px 6px rgba(0, 0, 0, 0.12);
+}
+
+#sync-offline {
+  background: #f0f0f0;
+}
+
+#sync-online {
+  background: #f0fff0;
+}
+
+#sync-pin, #sync-match {
+  box-shadow: 0px 1.5px 4px rgba(0, 0, 0, 0.24), 0px 1.5px 6px rgba(0, 0, 0, 0.12);
+}
+
+.sync-status {
+  font-size: 1em;
+  display: inline-block;
+  padding: 0;
+  margin: 0.25em;
+}
+
+#sync button {
+  float: right;
+  height: 1.5em;
+  margin: 0.5em;
+}
+
+#sync-pin label {
+  margin: 0 0.5em;
+}
+
+#sync-pin input {
+  width: 6em;
+}
+
+#sync h3 {
+  margin: 0.5em 0;
+  padding: 0 2em;
+}
+#sync p {
+  padding: 0 5em;
+  word-wrap: break-word;
+}
+
+#sync.online ~ #pass-list button.sync {
+    display: inline;
+}
+button.sync {
+    display: none;
 }

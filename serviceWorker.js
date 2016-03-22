@@ -11,6 +11,7 @@
       '/js/model-sync.js',
       '/js/view-password-console.js',
       '/js/view-password-list.js',
+      '/js/view-sync.js',
       '/sip-0.7.3.min.js',
       '/openpgp/openpgp.js',
       '/openpgp/openpgp.min.js',
