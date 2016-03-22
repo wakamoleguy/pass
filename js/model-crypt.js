@@ -1,14 +1,13 @@
 (function () {
   'use strict';
 
-  let passphrase = "super secret";
   let pubkey = null;
   let privkey = null;
 
   let options = {
     userIds: [{ name: 'Will Mitchell', email: 'wakamoleguy@gmail.com' }],
     numBits: 1024,
-    passphrase: 'super secret'
+    passphrase: null
   };
 
   let root = 'https://crypt.invalid/api/crypt/';
@@ -54,6 +53,10 @@
             console.log('No certificate found.');
             console.log("Generating keypair...(" + options.numBits + ")");
 
+            if (options.passphrase === null) {
+              options.passphrase = prompt('Enter New Passphrase:', 'super secret');
+            }
+
             return openpgp.generateKey(options).then(key => {
 
               this.putCert(key);
@@ -88,7 +91,10 @@
       return this.initialized.
         then(_ => {
           var key = privkey.keys[0];
-          key.decrypt('super secret');
+          if (options.passphrase === null) {
+            options.passphrase = prompt('Enter Passphrase', 'super secret');
+          }
+          key.decrypt(options.passphrase);
           return openpgp.decrypt({
             message: openpgp.message.readArmored(ciphertext),
             privateKey: key
