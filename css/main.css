@@ -174,8 +174,9 @@ body {
   padding: 0 0 5em 0;
   font: 1em/2em 'Roboto', sans-serif;
 }
-article, form#pass-add {
-  max-width: 38em;
+article, form#pass-add, #prompt > form {
+  box-sizing: border-box;
+  max-width: 40em;
   margin: 1em auto;
   box-shadow: 0px 1.5px 4px rgba(0, 0, 0, 0.24), 0px 1.5px 6px rgba(0, 0, 0, 0.12);
   padding: 1em;
@@ -270,4 +271,14 @@ li {
 }
 button.sync {
     display: none;
+}
+
+/* Prompt Modal */
+#prompt > form {
+    position: fixed;
+    width: 100%;
+    left: 50%;
+    top: 5%;
+    transform: translateX(-50%);
+    box-shadow: 0px 1.5px 4px rgba(0, 0, 0, 0.24), 0px 1.5px 6px rgba(0, 0, 0, 0.12), 0px 0px 0px 9999px rgba(0, 0, 0, 0.6);
 }

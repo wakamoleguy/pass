@@ -26,6 +26,7 @@
     this.passwordView = views.password;
     this.syncModel = models.sync;
     this.syncView = views.sync;
+    this.promptView = views.prompt;
 
     // Wire stuff together now, please.
     this.cryptModel.doaddok = this.passwordView.addok.bind(this.passwordView);
@@ -76,6 +77,10 @@
       });
     };
 
+    this.cryptModel.doprompt = (title, description) => {
+        return this.promptView.open(title, description);
+    };
+
     /* Initialize? */
     this.passwordView.browse();
   }
@@ -87,7 +92,8 @@
   }, {
     //password: new app.PasswordConsoleView(),
     password: new app.PasswordListView(),
-    sync: new app.SyncView()
+    sync: new app.SyncView(),
+    prompt: new app.PromptView()
   });
 
   app.crypt = crypt;

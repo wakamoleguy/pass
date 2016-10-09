@@ -59,16 +59,24 @@
             console.log('No certificate found.');
             console.log("Generating keypair...(" + options.numBits + ")");
 
-            if (options.passphrase === null) {
-              options.passphrase = prompt('Enter New Passphrase:\n\n' +
-                'Press cancel if you will be syncing from another device', '');
-            }
+            return new Promise((resolve, reject) => {
 
-            if (options.passphrase === null) {
-              return true;
-            } else {
-              return openpgp.generateKey(options).then(key => (this.putCert(key)));
-            }
+              if (options.passphrase === null) {
+                this.doprompt(
+                  'Enter New Passphrase',
+                  'Press cancel if you will be syncing from another device'
+                ).then((value) => {
+                  options.passphrase = value;
+                  resolve();
+                });
+              } else {
+                resolve();
+              }
+            }).then(_ => {
+              return options.passphrase !== null ?
+                openpgp.generateKey(options).then(key => (this.putCert(key))) :
+                true;
+              });
           } else {
 
             console.log('Got keypair from cache.');
@@ -94,13 +102,20 @@
       return this.initialized.
         then(_ => {
           var key = privkey.keys[0];
-          if (options.passphrase === null) {
-            options.passphrase = prompt('Enter Passphrase:', '');
-          }
-          key.decrypt(options.passphrase);
-          return openpgp.decrypt({
-            message: openpgp.message.readArmored(ciphertext),
-            privateKey: key
+
+          return (
+            options.passphrase === null ?
+              this.doprompt('Enter Passphrase', '').then((passphrase) => {
+                options.passphrase = passphrase;
+              }) :
+              new Promise((resolve, reject) => resolve())
+          ).then(_ => {
+
+            key.decrypt(options.passphrase);
+            return openpgp.decrypt({
+              message: openpgp.message.readArmored(ciphertext),
+              privateKey: key
+            });
           });
         }).
         then(plaintext => plaintext.data).
@@ -224,6 +239,10 @@
           return null;
         }
       });
+    },
+
+    doprompt(title, description) {
+        throw new Error("`doprompt` not implemented. Did you remember to wire it in main?");
     }
   };
 

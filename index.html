@@ -47,9 +47,11 @@
       </li>
     </ul>
 
+    <section id="prompt"></section>
+
     <!-- Templates -->
     <section id="templates">
-      <li id="passlist-item-template">
+      <div id="passlist-item-template">
         <article class="pass">
           <h2 class="name"></h2>
           <button type="button" class="delete">Delete</button>
@@ -58,7 +60,14 @@
           <button type="button" class="view">View</button>
           <span class="secret"></span>
         </article>
-      </li>
+      </div>
+      <form id="prompt-template">
+        <h2 class="title"></h2>
+        <p class="description"></p>
+        <input type="password" />
+        <input type="submit" name="submit" value="Submit" />
+        <input type="submit" name="cancel" value="Cancel" />
+      </form>
     </section>
 
     <!-- JavaScript -->
@@ -68,6 +77,7 @@
     <script src="js/view-password-console.js"></script>
     <script src="js/view-password-list.js"></script>
     <script src="js/view-sync.js"></script>
+    <script src="js/view-prompt.js"></script>
     <script src="js/model-crypt.js"></script>
     <script src="js/model-sync.js"></script>
     <script src="js/main.js"></script>
