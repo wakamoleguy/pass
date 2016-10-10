@@ -6,7 +6,7 @@
 
   let options = {
     userIds: [{ name: 'Will Mitchell', email: 'wakamoleguy@gmail.com' }],
-    numBits: 1024,
+    numBits: 4096,
     passphrase: null
   };
 

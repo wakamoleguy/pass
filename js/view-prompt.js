@@ -22,7 +22,7 @@
             }
         }
 
-        return node;        
+        return node;
     }
 
     function PromptView() {
